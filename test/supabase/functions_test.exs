@@ -310,7 +310,10 @@ defmodule Supabase.FunctionsTest do
       end)
 
       assert {:ok, response} =
-               Functions.invoke(client, "test-function", access_token: custom_token, http_client: @mock)
+               Functions.invoke(client, "test-function",
+                 access_token: custom_token,
+                 http_client: @mock
+               )
 
       assert response.body == %{"authorized" => true}
     end
@@ -360,7 +363,10 @@ defmodule Supabase.FunctionsTest do
       end)
 
       assert {:ok, _response} =
-               Functions.invoke(client, "test-function", access_token: custom_token, http_client: @mock)
+               Functions.invoke(client, "test-function",
+                 access_token: custom_token,
+                 http_client: @mock
+               )
 
       # Original client should be unchanged
       assert client.access_token == original_token
