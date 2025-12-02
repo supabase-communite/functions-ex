@@ -25,7 +25,7 @@ defmodule Supabase.Functions do
   - `region`: The Region to invoke the function in.
   - `on_response`: The custom response handler for response streaming.
   - `timeout`: The timeout in milliseconds for the request. Defaults to 15 seconds.
-  - `auth`: Override the authorization token for this request.
+  - `access_token`: Override the authorization token for this request.
   """
   @type opt ::
           {:body, Fetcher.body()}
@@ -34,7 +34,7 @@ defmodule Supabase.Functions do
           | {:region, region}
           | {:on_response, on_response}
           | {:timeout, pos_integer()}
-          | {:auth, String.t()}
+          | {:access_token, String.t()}
 
   @type on_response :: ({Fetcher.status(), Fetcher.headers(), body :: Enumerable.t()} ->
                           Supabase.result(Response.t()))
@@ -84,10 +84,10 @@ defmodule Supabase.Functions do
 
   ## Authentication
 
-  You can override the authorization token for a specific request using the `auth` option:
+  You can override the authorization token for a specific request using the `access_token` option:
 
       # Use a different token for this request
-      {:ok, response} = Supabase.Functions.invoke(client, "my-function", auth: "new_token")
+      {:ok, response} = Supabase.Functions.invoke(client, "my-function", access_token: "new_token")
 
   Alternatively, you can update the client's auth token functionally:
 
@@ -118,8 +118,8 @@ defmodule Supabase.Functions do
         body: %{data: "value"}, 
         timeout: 30_000)
 
-      # With custom auth token
-      {:ok, response} = Supabase.Functions.invoke(client, "my-function", auth: "custom_token")
+      # With custom access token
+      {:ok, response} = Supabase.Functions.invoke(client, "my-function", access_token: "custom_token")
   """
   @spec invoke(Client.t(), function :: String.t(), opts) :: Supabase.result(Response.t())
   def invoke(%Client{} = client, name, opts \\ []) when is_binary(name) do
@@ -127,11 +127,11 @@ defmodule Supabase.Functions do
     custom_headers = opts[:headers] || %{}
     timeout = opts[:timeout] || 15_000
 
-    # Handle auth token override
     effective_client =
-      case opts[:auth] do
-        nil -> client
-        auth_token when is_binary(auth_token) -> update_auth(client, auth_token)
+      if opts[:access_token] do
+        update_auth(client, opts[:access_token])
+      else
+        client
       end
 
     effective_client

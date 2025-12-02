@@ -294,7 +294,7 @@ defmodule Supabase.FunctionsTest do
     end
   end
 
-  describe "auth option in invoke/3" do
+  describe "access_token option in invoke/3" do
     test "overrides authorization header with custom token", %{client: client} do
       custom_token = "custom_auth_token"
 
@@ -310,7 +310,7 @@ defmodule Supabase.FunctionsTest do
       end)
 
       assert {:ok, response} =
-               Functions.invoke(client, "test-function", auth: custom_token, http_client: @mock)
+               Functions.invoke(client, "test-function", access_token: custom_token, http_client: @mock)
 
       assert response.body == %{"authorized" => true}
     end
@@ -335,7 +335,7 @@ defmodule Supabase.FunctionsTest do
 
       assert {:ok, response} =
                Functions.invoke(client, "test-function",
-                 auth: custom_token,
+                 access_token: custom_token,
                  headers: custom_headers,
                  body: body_data,
                  http_client: @mock
@@ -344,7 +344,7 @@ defmodule Supabase.FunctionsTest do
       assert response.body == %{"success" => true}
     end
 
-    test "original client remains unchanged after auth override", %{client: client} do
+    test "original client remains unchanged after access_token override", %{client: client} do
       original_token = client.access_token
       custom_token = "temporary_override_token"
 
@@ -360,13 +360,13 @@ defmodule Supabase.FunctionsTest do
       end)
 
       assert {:ok, _response} =
-               Functions.invoke(client, "test-function", auth: custom_token, http_client: @mock)
+               Functions.invoke(client, "test-function", access_token: custom_token, http_client: @mock)
 
       # Original client should be unchanged
       assert client.access_token == original_token
     end
 
-    test "nil auth option uses original client token", %{client: client} do
+    test "nil access_token option uses original client token", %{client: client} do
       expect(@mock, :stream, fn request, _opts ->
         assert Request.get_header(request, "authorization") == "Bearer #{client.access_token}"
 
@@ -379,12 +379,12 @@ defmodule Supabase.FunctionsTest do
       end)
 
       assert {:ok, response} =
-               Functions.invoke(client, "test-function", auth: nil, http_client: @mock)
+               Functions.invoke(client, "test-function", access_token: nil, http_client: @mock)
 
       assert response.body == %{"success" => true}
     end
 
-    test "empty auth option uses original client token", %{client: client} do
+    test "empty access_token option uses original client token", %{client: client} do
       expect(@mock, :stream, fn request, _opts ->
         assert Request.get_header(request, "authorization") == "Bearer #{client.access_token}"
 
